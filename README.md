@@ -29,12 +29,12 @@ I am going to make a Fact web app that increases general knowledge.
 
 
 # Tech Stack
+https://miro.medium.com/v2/resize:fit:4800/format:webp/0*0XLWZJULuqT_yGYw.jpg
 
-![image](https://github.com/user-attachments/assets/86c61a8f-9e88-494a-9dee-8bfa93fc2198)
 
 
 # Amazing Facts-Demo 
-![image](https://github.com/user-attachments/assets/e29dd594-3ae0-476a-a810-cb2defdd1004)
+
 
 [amazingfacts-v1.netlify.app](https://amazingfacts-v1.netlify.app/)
 
