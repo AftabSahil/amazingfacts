@@ -228,84 +228,162 @@ function ThemeToggle({isDarkMode,setIsDarkMode}){
       </div>
   );
 };
-function Fact({ fact, setFacts,isDarkMode })
- {
-  const [isUpdate, setIsUpdate] = useState(false);
-  const [userVote, setUserVote] = useState(null); // Track the user's vote
-  console.log(fact.votesInteresting);
-  const isDisputed = fact.votesInteresting + fact.votesMindblowing < fact.votesFalse;
+// function Fact({ fact, setFacts, isDarkMode }) {
+//   const [isUpdating, setIsUpdating] = useState(false);
+//   const [userVote, setUserVote] = useState(null); // Track user vote locally
+
+//   const isDisputed = fact.votesinteresting + fact.votesmindblowing < fact.votesfalse;
+
+//   async function handleVote(columnName) {
+//     if (isUpdating) return; // Prevent double clicks
+//     setIsUpdating(true);
+
+//     // Undo vote if the user clicks the same emoji again
+//     if (userVote === columnName) {
+//       setUserVote(null);
+//       setIsUpdating(false);
+//       return;
+//     }
+
+//     setUserVote(columnName);
+
+//     // Increment vote in Supabase
+//     const { data: updatedFact, error } = await supabase
+//       .from("facts")
+//       .update({ [columnName]: fact[columnName] + 1 })
+//       .eq("id", fact.id)
+//       .select();
+
+//     setIsUpdating(false);
+
+//     if (!error && updatedFact) {
+//       // Update local state
+//       setFacts((facts) =>
+//         facts.map((f) => (f.id === fact.id ? updatedFact[0] : f))
+//       );
+
+//       // Delete fact if votesFalse >= 100
+//       if (columnName === "votesFalse" && updatedFact[0].votesfalse >= 100) {
+//         await supabase.from("facts").delete().eq("id", fact.id);
+//         setFacts((facts) => facts.filter((f) => f.id !== fact.id));
+//       }
+//     } else if (error) {
+//       console.error("Vote update failed:", error);
+//     }
+//   }
+
+//   return (
+//     <li className={`facts ${isDarkMode ? "dark-mode" : ""}`}>
+//       <p>
+//         {isDisputed && <span className="disputed">[❌DISPUTED]</span>}
+//         {fact.text}
+//         <a className="source" href={fact.source} target="_blank" rel="noreferrer">
+//           (Source)
+//         </a>
+//       </p>
+
+//       <div className="vote-buttons">
+//         <button
+//           onClick={() => handleVote("votesInteresting")}
+//           disabled={isUpdating}
+//           style={{ fontWeight: userVote === "votesInteresting" ? "bold" : "normal" }}
+//           >
+//           <span role="img" aria-label="like">👍</span> <span>{fact.votesinteresting ?? 0}</span>
+//         </button>
+
+//         <button
+//           onClick={() => handleVote("votesMindblowing")}
+//           disabled={isUpdating}
+//           style={{ fontWeight: userVote === "votesMindblowing" ? "bold" : "normal" }}
+//           >
+//           <span role="img" aria-label="mindblowing">🤯</span> <span>{fact.votesmindblowing ?? 0}</span>
+//         </button>
+
+//         <button
+//           onClick={() => handleVote("votesFalse")}
+//           disabled={isUpdating}
+//           style={{ fontWeight: userVote === "votesFalse" ? "bold" : "normal" }}
+//           >
+//           <span role="img" aria-label="dislike">⛔️</span> <span>{fact.votesfalse ?? 0}</span>
+//         </button>
+//       </div>
+
+//     </li>
+//   );
+// }
+
+function Fact({ fact, setFacts, isDarkMode }) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [userVote, setUserVote] = useState(null);
+
+  const isDisputed =
+    (fact.votesinteresting ?? 0) + (fact.votesmindblowing ?? 0) <
+    (fact.votesfalse ?? 0);
 
   async function handleVote(columnName) {
-    setIsUpdate(true);
-    let newVoteCount = fact[columnName] + 1;
+    if (isUpdating) return;
+    setIsUpdating(true);
 
-    if (userVote === columnName) {
-      // Undo vote if the user clicks the same button again
-      newVoteCount -= 1;
-      setUserVote(null); // Reset user vote
-    } else {
-      // Set user vote to the new one
-      setUserVote(columnName);
-    }
+    console.log("🗳️ Voting for column:", columnName);
 
     const { data: updatedFact, error } = await supabase
       .from("facts")
-      .update({ [columnName]: newVoteCount })
+      .update({ [columnName]: (fact[columnName] ?? 0) + 1 })
       .eq("id", fact.id)
       .select();
 
-    setIsUpdate(false);
+    setIsUpdating(false);
 
-    if (!error) {
-      // Check if the updated column is votesFalse
-      if (columnName === "votesFalse" && updatedFact[0].votesFalse >= 100) {
-        // Delete the fact from Supabase
-        const { error: deleteError } = await supabase
-          .from("facts")
-          .delete()
-          .eq("id", fact.id);
-
-        if (!deleteError) {
-          // Remove the fact from the state
-          setFacts((facts) => facts.filter((f) => f.id !== fact.id));
-        } else {
-          console.error("Error deleting fact:", deleteError);
-        }
-      } else {
-        // Update the state for the normal vote counts
-        setFacts((facts) => facts.map((f) => (f.id === fact.id ? updatedFact[0] : f)));
-      }
+    if (error) {
+      console.error("❌ Vote update failed:", error.message);
+      alert("Vote update failed: " + error.message);
+    } else if (updatedFact && updatedFact.length > 0) {
+      console.log("✅ Updated fact:", updatedFact[0]);
+      setFacts((facts) =>
+        facts.map((f) => (f.id === fact.id ? updatedFact[0] : f))
+      );
+      setUserVote(columnName);
     }
   }
 
   return (
-    <li className={`facts ${isDarkMode ? 'dark-mode' : ''}`}>
+    <li className={`facts ${isDarkMode ? "dark-mode" : ""}`}>
       <p>
-        {isDisputed ? <span className="disputed">[❌DISPUTED]</span> : null}
-        {fact.text}<a className="source" href={fact.source} target="_blank" rel="noreferrer">(Source)</a>
+        {isDisputed && <span className="disputed">[❌DISPUTED]</span>}
+        {fact.text}
+        <a
+          className="source"
+          href={fact.source}
+          target="_blank"
+          rel="noreferrer"
+        >
+          (Source)
+        </a>
       </p>
 
       <div className="vote-buttons">
         <button
-          onClick={() => handleVote("votesInteresting")}
-          disabled={isUpdate}
-          style={{ fontWeight: userVote === "votesInteresting" ? "bold" : "normal" }}
+          onClick={() => handleVote("votesinteresting")}
+          disabled={isUpdating}
+          style={{ fontWeight: userVote === "votesinteresting" ? "bold" : "normal" }}
         >
-          👍 {fact.votesInteresting}
+          👍 <span>{fact.votesinteresting ?? 0}</span>
         </button>
+
         <button
-          onClick={() => handleVote("votesMindblowing")}
-          disabled={isUpdate || userVote === "votesFalse"} // Disable if user has disliked
-          style={{ fontWeight: userVote === "votesMindblowing" ? "bold" : "normal" }}
+          onClick={() => handleVote("votesmindblowing")}
+          disabled={isUpdating}
+          style={{ fontWeight: userVote === "votesmindblowing" ? "bold" : "normal" }}
         >
-          🤯 {fact.votesMindblowing}
+          🤯 <span>{fact.votesmindblowing ?? 0}</span>
         </button>
+
         <button
-          onClick={() => handleVote("votesFalse")}
-          disabled={isUpdate}
-          style={{ fontWeight: userVote === "votesFalse" ? "bold" : "normal" }}
+          onClick={() => handleVote("votesfalse")}
+          disabled={isUpdating}
+          style={{ fontWeight: userVote === "votesfalse" ? "bold" : "normal" }}
         >
-          ⛔️ {fact.votesFalse}
+          ⛔️ <span>{fact.votesfalse ?? 0}</span>
         </button>
       </div>
     </li>
