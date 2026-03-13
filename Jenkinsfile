@@ -56,13 +56,18 @@ pipeline {
                     sh '''
                     EC2_IP=$(cd terraform && terraform output -raw ec2_public_ip)
 
-                    echo "Waiting for SSH to be available..."
-                    for i in $(seq 1 20); do
+                    echo "Waiting for SSH..."
+                    for i in $(seq 1 30); do
                         ssh -i $SSH_KEY -o StrictHostKeyChecking=no -o ConnectTimeout=5 $SSH_USER@$EC2_IP "echo ready" && break
-                        echo "Attempt $i failed, retrying in 60s..."
-                        sleep 60
+                        echo "Attempt $i failed, retrying in 15s..."
+                        sleep 15
                     done
 
+                    echo "Waiting for Docker to be ready..."
+                    ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
+                        "until /usr/bin/docker info > /dev/null 2>&1; do echo 'Waiting for Docker...'; sleep 5; done"
+
+                    echo "Deploying container..."
                     ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
                         "/usr/bin/docker stop \$(/usr/bin/docker ps -q) 2>/dev/null; /usr/bin/docker rm \$(/usr/bin/docker ps -aq) 2>/dev/null; /usr/bin/docker run -d -p 80:80 alexdocker159/amazingfacts:latest"
                     '''
