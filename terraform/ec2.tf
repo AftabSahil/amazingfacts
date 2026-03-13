@@ -14,7 +14,7 @@ resource "aws_instance" "web_server" {
 sudo apt update -y
 sudo apt install docker.io -y
 sudo systemctl start docker
-sudo docker run -d -p 80:80 alexdocker159/amazingfacts:latest
+sudo usermod -aG docker ubuntu
 EOF
 
   tags = {
