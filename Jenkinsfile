@@ -59,12 +59,12 @@ pipeline {
                     echo "Waiting for SSH to be available..."
                     for i in $(seq 1 20); do
                         ssh -i $SSH_KEY -o StrictHostKeyChecking=no -o ConnectTimeout=5 $SSH_USER@$EC2_IP "echo ready" && break
-                        echo "Attempt $i failed, retrying in 15s..."
-                        sleep 15
+                        echo "Attempt $i failed, retrying in 60s..."
+                        sleep 60
                     done
 
                     ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
-                        "docker stop \$(docker ps -q) 2>/dev/null; docker rm \$(docker ps -aq) 2>/dev/null; docker run -d -p 80:80 alexdocker159/amazingfacts:latest"
+                        "/usr/bin/docker stop \$(/usr/bin/docker ps -q) 2>/dev/null; /usr/bin/docker rm \$(/usr/bin/docker ps -aq) 2>/dev/null; /usr/bin/docker run -d -p 80:80 alexdocker159/amazingfacts:latest"
                     '''
                 }
             }
