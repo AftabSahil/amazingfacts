@@ -35,24 +35,27 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 sh '''
-                cd terraform
-                terraform init
+                cd terraform && terraform init
                 '''
             }
         }
         stage('Terraform Apply') {
             steps {
                 sh '''
-                cd terraform
-                terraform apply -auto-approve
+                cd terraform && terraform apply -auto-approve
                 '''
             }
-        }  // ← this closing brace was missing!
+        }
         stage('Run Container on EC2') {
             steps {
-                sshagent(credentials: ['ec2-key']) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'ec2-key',
+                    keyFileVariable: 'SSH_KEY',
+                    usernameVariable: 'SSH_USER'
+                )]) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@$(terraform output -raw ec2_public_ip) \
+                    EC2_IP=$(cd terraform && terraform output -raw ec2_public_ip)
+                    ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
                     "sudo docker run -d -p 80:80 alexdocker159/amazingfacts:latest"
                     '''
                 }
