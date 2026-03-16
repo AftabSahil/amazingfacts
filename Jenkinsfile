@@ -75,8 +75,11 @@ pipeline {
                         "until /usr/bin/docker info > /dev/null 2>&1; do echo 'Waiting for Docker...'; sleep 5; done"
 
                     echo "Deploying container..."
-                    ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
-                        "/usr/bin/docker stop \$(/usr/bin/docker ps -q) 2>/dev/null; /usr/bin/docker rm \$(/usr/bin/docker ps -aq) 2>/dev/null; /usr/bin/docker run -d -p 80:80 alexdocker159/amazingfacts:latest"
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
+                        "sudo /usr/bin/docker stop \$(sudo /usr/bin/docker ps -q) 2>/dev/null; \
+                        sudo /usr/bin/docker rm \$(sudo /usr/bin/docker ps -aq) 2>/dev/null; \
+                        sudo /usr/bin/docker pull alexdocker159/amazingfacts:latest; \
+                        sudo /usr/bin/docker run -d -p 80:80 alexdocker159/amazingfacts:latest"
                     '''
                 }
             }
