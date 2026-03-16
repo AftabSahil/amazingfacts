@@ -76,6 +76,7 @@ pipeline {
 
                     echo "Deploying container..."
                         ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
+                        echo "hey i have sshed into the server"; \
                         "sudo /usr/bin/docker stop \$(sudo /usr/bin/docker ps -q) 2>/dev/null; \
                         sudo /usr/bin/docker rm \$(sudo /usr/bin/docker ps -aq) 2>/dev/null; \
                         sudo /usr/bin/docker pull alexdocker159/amazingfacts:latest; \
