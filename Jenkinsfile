@@ -69,10 +69,9 @@ pipeline {
                         echo "Attempt $i failed, retrying in 15s..."
                         sleep 15
                     done
-
-                    // echo "Waiting for Docker to be ready..."
-                    // ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
-                    //     "until sudo /usr/bin/docker info > /dev/null 2>&1; do echo 'Waiting for Docker...'; sleep 5; done"
+                    #echo "Waiting for Docker to be ready..."
+                    #ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
+                    #     "until sudo /usr/bin/docker info > /dev/null 2>&1; do echo 'Waiting for Docker...'; sleep 5; done"
 
                     echo "Deploying container..."
                         ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@$EC2_IP \
